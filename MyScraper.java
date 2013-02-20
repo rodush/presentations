@@ -41,6 +41,7 @@ public class MyScraper
         final WebClient client = new WebClient( BrowserVersion.FIREFOX_10 );
         client.getOptions().setThrowExceptionOnFailingStatusCode( false );
         client.getOptions().setUseInsecureSSL( true );
+        client.getOptions().setJavaScriptEnabled( true );
         
         // Attach attachment handler
         client.setAttachmentHandler( new CollectingAttachmentHandler() );
@@ -71,9 +72,13 @@ public class MyScraper
                 page = aPage;
             }
         }
+
+        int openedTopWindowsCnt = client.getTopLevelWindows().size();
+        System.out.println( "We have got " + openedTopWindowsCnt + " Top-Level windows opened" );
+
         
         int openedWindowsCnt = client.getWebWindows().size();
-        System.out.println( "We have got " + openedWindowsCnt + " windows opened" );
+        System.out.println( "We have got " + openedWindowsCnt + " Web-Windows opened" );
         System.out.println( "Looking in the page with title: " + page.getTitleText().trim() );
         // Find form with search input tag
         HtmlForm searchForm = (HtmlForm) page.getFirstByXPath( "//*[@id='content']/fieldset/form" );
@@ -143,7 +148,16 @@ public class MyScraper
         System.out.println( "Done!" );
 
         //System.out.println( "Here is content of our page: \n\n\n" + currentPageXml + "\n\n\n" );
-        return;
+
+        HtmlPage page2 = (HtmlPage) client.getPage("http://localhost:8000");
+        HtmlForm aForm = (HtmlForm) page2.getFormByName("testForm");
+        HtmlInput loginInput = (HtmlInput) aForm.getInputByName("login");
+        loginInput.setValueAttribute("someText");
+        System.out.println( "Here how page looks like after {setValue}: " + page2.asXml() );
+        loginInput.blur();
+        loginInput.type("Now we type and check...");
+        loginInput.blur();
+        System.out.println( "Here how page looks like after {type}: " + page2.asXml() );
     }
 
 }
