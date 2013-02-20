@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>"onkeyup" handler example</title>
+        <script typt="text/javascript">
+            window.onload = function(){
+                var aForm = document.getElementById("container").childNodes[0];
+                window.targetContainer = document.getElementById("target");
+            }
+
+            function doValidate(elem){
+                targetContainer.innerHTML = elem.value;
+            }
+           
+        </script>
+    </head>
+    <body>
+        <div id="container">
+            <form name="testForm" method="get" action="./">
+                <input type="text" id="login" name="login" onkeyup="doValidate(this);" />
+                <input name="submitBtn" value="Proceed" type="submit" onclick="return false;">
+            </form>
+        </div>
+        <div id="target"></div>
+    </body>
+</html>
