@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<htm>
+    <head>
+        <title>Examples::Page with IFrames</title>
+        <style type="text/css">
+            body, html {
+                margin: 0;
+                padding: 0;
+                height: 100%;
+                min-height: 100%;
+                font-size: 1em;
+            }
+            .iframe_container{
+                display: block;
+                float: left;
+                margin-right: 10px;
+            }
+            .iframe_container:last-of-type:after {
+                display: block;
+            }
+            footer {
+                width: 100%;
+                display: block;
+                clear: both;
+                position: fixed;
+                bottom: 0px;
+                text-align: center;
+                background-color: pink;
+                padding: 10px;
+            }
+            header{
+                background-color: bisque;
+                padding: 20px;
+            }
+        </style>
+    </head>
+    <body>
+        <header>Some header</header>
+        <section class="iframe_container">
+            <iframe title="Facebook" src="http://ua.fm/" width="480" height="320"></iframe>
+        </section>
+        <section class="iframe_container">
+            <iframe title="LinkedIn" src="http://rodush.com/" width="480" height="320"></iframe>
+        </section>
+        <footer>
+            2013 &copy; <a href="http://rodush.com/" target="_blank">RoDush</a>
+        </footer>
+    </body>
+</htm>
