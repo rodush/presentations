@@ -20,29 +20,49 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 
+import java.util.logging.FileHandler;
+import java.util.logging.Formatter;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.logging.SimpleFormatter;
 
 public class MyScraper
 {
+    static private FileHandler fileTxt;
+    static private SimpleFormatter formatterTxt;
+    static private Logger myLogger = Logger.getLogger(MyScraper.class.getName());
+
     public static void main( String[] args ) throws java.io.IOException
     {
+        //Logger.getLogger("com.gargoylesoftware.htmlunit").setLevel(Level.OFF);
+        Logger.getLogger("com.gargoylesoftware.htmlunit.WebClient").setLevel(Level.INFO);
+        Logger.getLogger("org.apache.commons.httpclient").setLevel(Level.OFF);
+
+        myLogger.setLevel(Level.INFO);
+        fileTxt = new FileHandler("logging.txt");
+
+        // Create txt formatter
+        formatterTxt = new SimpleFormatter();
+        fileTxt.setFormatter(formatterTxt);
+        myLogger.addHandler(fileTxt);
 
         //System.getProperties().put("org.apache.commons.logging.simplelog.defaultlog", "trace");
         // Log only fatal errors
-        System.getProperties().put( "org.apache.commons.logging.simplelog.defaultlog", "fatal" );
-
+        //System.getProperties().put( "org.apache.commons.logging.simplelog.defaultlog", "fatal" );
 
         //LogFactory.getFactory().setAttribute("org.apache.commons.logging.Log", "org.apache.commons.logging.impl.NoOpLog");
 
-        //java.util.logging.Logger.getLogger("com.gargoylesoftware.htmlunit").setLevel(Level.OFF); 
-        //java.util.logging.Logger.getLogger("org.apache.commons.httpclient").setLevel(Level.OFF);
 
-
+        //-----------------------------------------------------------------
+        // INSTANTIATE A WEB CLIENT
+        //-----------------------------------------------------------------
 
         final WebClient client = new WebClient( BrowserVersion.FIREFOX_10 );
+
         client.getOptions().setThrowExceptionOnFailingStatusCode( false );
         client.getOptions().setUseInsecureSSL( true );
         client.getOptions().setJavaScriptEnabled( true );
-        
+
         // Attach attachment handler
         client.setAttachmentHandler( new CollectingAttachmentHandler() );
 
@@ -57,7 +77,7 @@ public class MyScraper
             String pageHtml = page.asXml();
         }
         else {
-            System.out.println( "Can't find link to Search page" ); 
+            myLogger.info( "Can't find link to Search page" ); 
             return;
         }
 
@@ -66,25 +86,25 @@ public class MyScraper
         while( windowIt.hasNext() ){
             WebWindow aWindow = (WebWindow) windowIt.next();
             HtmlPage aPage = (HtmlPage) aWindow.getEnclosedPage();
-            System.out.println( "Current window has page with title: " + aPage.getTitleText().trim() );
+            myLogger.info( "Current window has page with title: " + aPage.getTitleText().trim() );
             if( aPage.getTitleText().contains( "Поиск" ) ){
-                System.out.println( "Okay, we have found our page, keep reference to it" );
+                myLogger.info( "Okay, we have found our page, keep reference to it" );
                 page = aPage;
             }
         }
 
         int openedTopWindowsCnt = client.getTopLevelWindows().size();
-        System.out.println( "We have got " + openedTopWindowsCnt + " Top-Level windows opened" );
+        myLogger.info( "We have got " + openedTopWindowsCnt + " Top-Level windows opened" );
 
         
         int openedWindowsCnt = client.getWebWindows().size();
-        System.out.println( "We have got " + openedWindowsCnt + " Web-Windows opened" );
-        System.out.println( "Looking in the page with title: " + page.getTitleText().trim() );
+        myLogger.info( "We have got " + openedWindowsCnt + " Web-Windows opened" );
+        myLogger.info( "Looking in the page with title: " + page.getTitleText().trim() );
         // Find form with search input tag
         HtmlForm searchForm = (HtmlForm) page.getFirstByXPath( "//*[@id='content']/fieldset/form" );
 
         if( searchForm == null ){
-            System.out.println( "Can't find search form..." ); 
+            myLogger.info( "Can't find search form..." ); 
             return;
         }
 
@@ -96,7 +116,7 @@ public class MyScraper
         // TODO: Save page - ensure that the value was typed
         
         HtmlSubmitInput submitBtn = (HtmlSubmitInput) searchForm.getInputByValue( "Поехали" );
-        System.out.println( "Submitting search form");
+        myLogger.info( "Submitting search form");
         submitBtn.click();
         client.waitForBackgroundJavaScriptStartingBefore( 2000 );
         page = (HtmlPage) client.getCurrentWindow().getEnclosedPage();
@@ -104,16 +124,16 @@ public class MyScraper
 
         // Get the very first link to torrent
         HtmlAnchor linkToTorrentPage = (HtmlAnchor) page.getFirstByXPath("//a[contains(@href, '/torrent')]");
-        System.out.println( "Clicking found link -  " + linkToTorrentPage.asText() );
+        myLogger.info( "Clicking found link -  " + linkToTorrentPage.asText() );
         page = linkToTorrentPage.click();
         currentPageXml = page.asXml();
         // TODO: Save page source
         
         // Find link to torrent file
-        System.out.println( "Got page with title '" + page.getTitleText().trim() + "'" );
+        myLogger.info( "Got page with title '" + page.getTitleText().trim() + "'" );
         HtmlAnchor linkToTorrentFile = (HtmlAnchor) page.getFirstByXPath( "//div[@id='download']//a[contains(text(), 'Скачать ')]" );
         if( linkToTorrentFile == null ){
-            System.out.println( "Can't find Download link :( ...." );
+            myLogger.info( "Can't find Download link :( ...." );
             return;
         }
         linkToTorrentFile.click();
@@ -124,11 +144,11 @@ public class MyScraper
 
         // Here starts downloading of this file...
         List<Attachment> attachments = ((CollectingAttachmentHandler) client.getAttachmentHandler()).getCollectedAttachments();
-        System.out.println( "We have got " + attachments.size() + " attachments" );
-        System.out.println( "Attached filename - " + attachments.get(0).getSuggestedFilename() );
-        System.out.println( "Attached page content length - " + attachments.get(0).getPage().getWebResponse().getContentAsString().length() + " chars" );
+        myLogger.info( "We have got " + attachments.size() + " attachments" );
+        myLogger.info( "Attached filename - " + attachments.get(0).getSuggestedFilename() );
+        myLogger.info( "Attached page content length - " + attachments.get(0).getPage().getWebResponse().getContentAsString().length() + " chars" );
 
-        // TODO: Save file on the disc
+        // Save file on the disc
         File torrentFile = new File( attachments.get(0).getSuggestedFilename() );
         if( !torrentFile.exists() ){
             torrentFile.createNewFile();
@@ -142,22 +162,36 @@ public class MyScraper
         }
         catch(IOException ioe){
             ioe.printStackTrace();
-            System.out.println( "Failed save torrent file to disc. Reason: " + ioe.getMessage() );
+            myLogger.info( "Failed save torrent file to disc. Reason: " + ioe.getMessage() );
         }
 
-        System.out.println( "Done!" );
+        myLogger.info( "Done!" );
 
-        //System.out.println( "Here is content of our page: \n\n\n" + currentPageXml + "\n\n\n" );
+        //myLogger.info( "Here is content of our page: \n\n\n" + currentPageXml + "\n\n\n" );
 
         HtmlPage page2 = (HtmlPage) client.getPage("http://localhost:8000");
         HtmlForm aForm = (HtmlForm) page2.getFormByName("testForm");
         HtmlInput loginInput = (HtmlInput) aForm.getInputByName("login");
         loginInput.setValueAttribute("someText");
-        System.out.println( "Here how page looks like after {setValue}: " + page2.asXml() );
+        myLogger.info( "Here how page looks like after {setValue}: " + page2.asXml() );
         loginInput.blur();
         loginInput.type("Now we type and check...");
         loginInput.blur();
-        System.out.println( "Here how page looks like after {type}: " + page2.asXml() );
+        myLogger.info( "Here how page looks like after {type}: " + page2.asXml() );
+
+        // Here page with two iframes. Let's check WebWindows and TopLevelWindows size
+        HtmlPage page = client.getPage( "http://localhost:8000/examples/page_with_iframes.html" );
+        int openedTopWindowsCnt = client.getTopLevelWindows().size();
+        int webWindowsCnt = client.getWebWindows().size();
+        int framesCnt = ((HtmlPage)client.getCurrentWindow().getEnclosedPage()).getFrames().size();
+        myLogger.info( "We have " + openedTopWindowsCnt + " Top Level windows, and " +
+            webWindowsCnt + " web windows currently opened, plus " + framesCnt + " frames on the parent page!" );
+
+        // Example of alert, confirm and prompt:
+        HtmlPage pageWithDialogs = client.getPage( "http://localhost:8000/examples/page_with_iframes.html" );
+        myLogger.info( "Look, there is nothing to do if one don't want to ;-)" );
+
+        myLogger.warning("Bye!");
     }
 
 }
