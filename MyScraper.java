@@ -212,7 +212,7 @@ public class MyScraper
         }
 
         // Example of alert, confirm and prompt:
-        HtmlPage pageWithDialogs = client.getPage( "http://localhost:8000/examples/page_with_iframes.html" );
+        HtmlPage pageWithDialogs = client.getPage( "http://localhost:8000/examples/alert_and_confirm.html" );
         myLogger.info( "Look, there is nothing to do if one don't want to ;-)" );
 
         myLogger.warning("Bye!");
