@@ -20,6 +20,8 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 
+import java.util.Scanner;
+
 import java.util.logging.FileHandler;
 import java.util.logging.Formatter;
 import java.util.logging.Level;
@@ -34,6 +36,9 @@ public class MyScraper
 
     public static void main( String[] args ) throws java.io.IOException
     {
+        String command;
+        Scanner scanIn = new Scanner(System.in);
+
         //Logger.getLogger("com.gargoylesoftware.htmlunit").setLevel(Level.OFF);
         Logger.getLogger("com.gargoylesoftware.htmlunit.WebClient").setLevel(Level.INFO);
         Logger.getLogger("org.apache.commons.httpclient").setLevel(Level.OFF);
@@ -167,9 +172,16 @@ public class MyScraper
 
         myLogger.info( "Done!" );
 
+               
+        System.out.println("Continue?");
+        command = scanIn.nextLine();
+        if(command == "yes"){
+            scanIn.close();
+        }
+
         //myLogger.info( "Here is content of our page: \n\n\n" + currentPageXml + "\n\n\n" );
 
-        HtmlPage page2 = (HtmlPage) client.getPage("http://localhost:8000");
+        HtmlPage page2 = (HtmlPage) client.getPage("http://localhost:8000/examples/onchange_handler.html");
         HtmlForm aForm = (HtmlForm) page2.getFormByName("testForm");
         HtmlInput loginInput = (HtmlInput) aForm.getInputByName("login");
         loginInput.setValueAttribute("someText");
@@ -179,13 +191,25 @@ public class MyScraper
         loginInput.blur();
         myLogger.info( "Here how page looks like after {type}: " + page2.asXml() );
 
+        System.out.println("Continue?");
+        command = scanIn.nextLine();
+        if(command == "yes"){
+            scanIn.close();
+        }
+
         // Here page with two iframes. Let's check WebWindows and TopLevelWindows size
-        HtmlPage page = client.getPage( "http://localhost:8000/examples/page_with_iframes.html" );
-        int openedTopWindowsCnt = client.getTopLevelWindows().size();
+        page = (HtmlPage) client.getPage( "http://localhost:8000/examples/page_with_iframes.html" );
+        openedTopWindowsCnt = client.getTopLevelWindows().size();
         int webWindowsCnt = client.getWebWindows().size();
         int framesCnt = ((HtmlPage)client.getCurrentWindow().getEnclosedPage()).getFrames().size();
         myLogger.info( "We have " + openedTopWindowsCnt + " Top Level windows, and " +
             webWindowsCnt + " web windows currently opened, plus " + framesCnt + " frames on the parent page!" );
+
+        System.out.println("Continue?");
+        command = scanIn.nextLine();
+        if(command == "yes"){
+            scanIn.close();
+        }
 
         // Example of alert, confirm and prompt:
         HtmlPage pageWithDialogs = client.getPage( "http://localhost:8000/examples/page_with_iframes.html" );
